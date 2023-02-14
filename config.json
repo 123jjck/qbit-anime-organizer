@@ -1,0 +1,43 @@
+{
+    "per-category-settings": {
+        "Anime (AniLibria)": {
+            "series": {
+                "moving": {
+                    "enabled": true,
+                    "default_season": 1,
+                    "allow_manual_naming": false,
+                    "destination": "/video/Сериалы/",
+                    "seasons_folder_name": "Season [n]"
+                }
+            },
+            "api": {
+                "host": "https://api.anilibria.tv",
+                "enable_fetching": true,
+                "enable_hash_check": true
+            }
+        }
+    },
+    "default": {
+        "qbit": {
+            "host": "localhost:8080",
+            "username": "admin",
+            "password": "adminadmin",
+            "allowed_states": ["stalledUP", "queuedUP", "uploading", "pausedUP", "checkingUP"],
+            "allowed_categories": ["Anime", "Anime (AniLibria)"]
+        },
+        "series": {
+            "moving": {
+                "enabled": true,
+                "default_season": 1,
+                "allow_manual_naming": true,
+                "destination": "/video/Сериалы/",
+                "seasons_folder_name": "Season [n]"
+            }
+        },
+        "api": {
+            "host": "https://api.anilibria.tv",
+            "enable_fetching": false,
+            "enable_hash_check": true
+        }
+    }
+}
