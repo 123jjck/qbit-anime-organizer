@@ -17,7 +17,7 @@
             }
         }
     },
-    "default": {
+    "global": {
         "qbit": {
             "host": "localhost:8080",
             "username": "admin",
