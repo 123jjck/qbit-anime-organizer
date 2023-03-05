@@ -7,51 +7,46 @@ if getattr(sys, 'frozen', False):
 elif __file__:
     application_path = os.path.dirname(__file__)
 
+# Load config
 config_path = os.path.join(application_path, 'config.json')
+config_file = open(config_path, "r")
+config = json.load(config_file)
+config_file.close()
 
-cfg_file = open(config_path, "r")
-config = json.load(cfg_file)
+config_profile = 'global'
 
-# Config 
-allowed_states = config['default']['qbit']['allowed_states']
-allowed_categories = config['default']['qbit']['allowed_categories']
-host = config['default']['qbit']['host']
-username = config['default']['qbit']['username']
-password = config['default']['qbit']['password']
+allowed_states = config[config_profile]['qbit']['allowed_states']
+allowed_categories = config[config_profile]['qbit']['allowed_categories']
+host = config[config_profile]['qbit']['host']
+username = config[config_profile]['qbit']['username']
+password = config[config_profile]['qbit']['password']
 
 client = Client(host=host, username=username, password=password)
 torrent_hash = sys.argv[1]
-
 torrent_info = client.torrents_info(torrent_hashes=torrent_hash)
 torrent = torrent_info[0]
 
-config_profile = 'default'
 if(torrent.category in config['per-category-settings']):
     config_profile = torrent.category
     config = config['per-category-settings']
 
-# Series moving settings
 moving_enabled = config[config_profile]['series']['moving']['enabled']
 default_season = config[config_profile]['series']['moving']['default_season'] # Default season number when is not specified manually
 allow_manual_naming = config[config_profile]['series']['moving']['allow_manual_naming'] # This will prefer manual naming instead of AniLibria (still will try to get season number even if disabled)
 move_to = config[config_profile]['series']['moving']['destination']
 season_folder_name = config[config_profile]['series']['moving']['seasons_folder_name']
 
-# AniLibria API config
 api_host = config[config_profile]['api']['host']
 fetch_from_AniLibria = config[config_profile]['api']['enable_fetching']
 enable_hash_check = config[config_profile]['api']['enable_hash_check']
 
-
 is_anilibria_torrent = False
 
 def sanitize_filename(string):
-    return "".join( x for x in string if (x.isalnum() or x in ".,_- ")).strip()
+    return "".join( x for x in string if (x.isalnum() or x in ".,_-! ")).strip()
 
 if torrent.state in allowed_states and torrent.progress == 1 and torrent.category in allowed_categories:
     torrent_download_path = torrent.save_path
-    # ONLY FOR DEBUG
-    #torrent_download_path = torrent_download_path.replace('/video/', '/home/hdd/Video/')
     torrent_folder_path = torrent.content_path
 
     if "AniLibria.TV" in torrent_folder_path: is_anilibria_torrent = True
@@ -90,7 +85,6 @@ if torrent.state in allowed_states and torrent.progress == 1 and torrent.categor
 
                 for title in search_request.json(): # Try to find right title
                     if title['type']['code'] == 0: 
-                        print('[ERROR] This script don\'t support movies!')
                         continue
 
                     for parsedTorrent in title['torrents']['list']:
@@ -99,6 +93,7 @@ if torrent.state in allowed_states and torrent.progress == 1 and torrent.categor
                             selected_title = title
                             title_name = sanitize_filename(selected_title['names']['ru'])
                             break
+
                     if selected_title is not None: break 
 
         season_regex = re.compile(r'\[S\d{1,2}\]')
@@ -111,5 +106,5 @@ if torrent.state in allowed_states and torrent.progress == 1 and torrent.categor
             print('[WARN] We can\'t find season from torrent title! Using default season (%s) instead' % default_season)
         
         client.torrents_rename_folder(torrent_hash=torrent_hash, old_path=os.path.basename(torrent_folder_path), new_path=season_folder_name.replace('[n]', str(season)))
-
         client.torrents_set_location(torrent_hashes=torrent_hash, location=os.path.join(move_to, title_name))
+        client.torrents_set_category(category="", torrent_hashes=torrent_hash)
