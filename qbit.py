@@ -100,11 +100,12 @@ if torrent.state in allowed_states and torrent.progress == 1 and torrent.categor
         print(torrent.name)
         if re.search(season_regex, torrent.name):
             season = int(re.search(season_regex, torrent.name).group(0).replace('[S', '').replace(']', ''))
-            if allow_manual_naming: title_name = sanitize_filename(re.sub(season_regex, '', torrent.name))
             print(season, title_name)
         else:
             print('[WARN] We can\'t find season from torrent title! Using default season (%s) instead' % default_season)
-        
+
+        if allow_manual_naming: title_name = sanitize_filename(re.sub(season_regex, '', torrent.name))
+
         client.torrents_rename_folder(torrent_hash=torrent_hash, old_path=os.path.basename(torrent_folder_path), new_path=season_folder_name.replace('[n]', str(season)))
         client.torrents_set_location(torrent_hashes=torrent_hash, location=os.path.join(move_to, title_name))
         client.torrents_set_category(category="", torrent_hashes=torrent_hash)
